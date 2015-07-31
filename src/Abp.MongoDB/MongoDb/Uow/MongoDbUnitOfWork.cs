@@ -9,7 +9,7 @@ namespace Abp.MongoDb.Uow
     /// <summary>
     /// Implements Unit of work for MongoDB.
     /// </summary>
-    public class MongoDbUnitOfWork : UnitOfWorkBase, ITransientDependency
+    public class MongoDbUnitOfWork : UnitOfWorkBase, ITransientDependency, IMongoDbUnitOfWork
     {
         /// <summary>
         /// Gets a reference to MongoDB Database.

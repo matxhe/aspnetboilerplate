@@ -42,6 +42,11 @@ namespace Abp.Domain.Uow
         public bool IsDisabled { get; set; }
 
         /// <summary>
+        /// Used to instruct UnitOfWorkManager to resolve IMongoDbUnitOfWork
+        /// </summary>
+        public bool IsMongoDb { get; set; }
+
+        /// <summary>
         /// Creates a new UnitOfWorkAttribute object.
         /// </summary>
         public UnitOfWorkAttribute()
@@ -131,7 +136,8 @@ namespace Abp.Domain.Uow
             {
                 IsTransactional = IsTransactional,
                 IsolationLevel = IsolationLevel,
-                Timeout = Timeout
+                Timeout = Timeout,
+                IsMongoDb = IsMongoDb
             };
         }
     }

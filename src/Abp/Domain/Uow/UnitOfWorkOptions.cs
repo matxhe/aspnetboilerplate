@@ -10,6 +10,8 @@ namespace Abp.Domain.Uow
     /// </summary>
     public class UnitOfWorkOptions
     {
+        public bool IsMongoDb { get; set; }
+
         /// <summary>
         /// Is this UOW transactional?
         /// Uses default value if not supplied.

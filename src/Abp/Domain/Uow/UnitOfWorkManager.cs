@@ -39,8 +39,12 @@ namespace Abp.Domain.Uow
             }
 
             options.FillDefaultsForNonProvidedOptions(_defaultOptions);
-            
-            var uow = _iocResolver.Resolve<IUnitOfWork>();
+
+            IUnitOfWork uow = null;
+            if(options.IsMongoDb)
+                uow = _iocResolver.Resolve<IMongoDbUnitOfWork>();
+            else
+                uow = _iocResolver.Resolve<IUnitOfWork>();
 
             uow.Completed += (sender, args) =>
             {

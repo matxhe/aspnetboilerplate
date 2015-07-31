@@ -106,6 +106,7 @@
     <Compile Include="Auditing\AuditingHelper.cs" />
     <Compile Include="Auditing\IMvcControllersAuditingConfiguration.cs" />
     <Compile Include="Auditing\MvcControllersAuditingConfiguration.cs" />
+    <Compile Include="Domain\Uow\IMongoDbUnitOfWork.cs" />
     <Compile Include="Json\JsonHelper.cs" />
     <Compile Include="NameValue.cs" />
     <Compile Include="Application\Services\Dto\NameValueDto.cs" />
