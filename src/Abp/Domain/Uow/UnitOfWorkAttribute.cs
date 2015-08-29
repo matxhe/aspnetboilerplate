@@ -17,6 +17,11 @@ namespace Abp.Domain.Uow
     public class UnitOfWorkAttribute : Attribute
     {
         /// <summary>
+        /// Scope option.
+        /// </summary>
+        public TransactionScopeOption? Scope { get; set; }
+
+        /// <summary>
         /// Is this UOW transactional?
         /// Uses default value if not supplied.
         /// </summary>
@@ -110,6 +115,30 @@ namespace Abp.Domain.Uow
         }
 
         /// <summary>
+        /// Creates a new <see cref="UnitOfWorkAttribute"/> object.
+        /// <see cref="IsTransactional"/> is automatically set to true.
+        /// </summary>
+        /// <param name="scope">Transaction scope</param>
+        public UnitOfWorkAttribute(TransactionScopeOption scope)
+        {
+            IsTransactional = true;
+            Scope = scope;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="UnitOfWorkAttribute"/> object.
+        /// <see cref="IsTransactional"/> is automatically set to true.
+        /// </summary>
+        /// <param name="scope">Transaction scope</param>
+        /// <param name="timeout">Transaction  timeout as milliseconds</param>
+        public UnitOfWorkAttribute(TransactionScopeOption scope, int timeout)
+        {
+            IsTransactional = true;
+            Scope = scope;
+            Timeout = TimeSpan.FromMilliseconds(timeout);
+        }
+
+        /// <summary>
         /// Gets UnitOfWorkAttribute for given method or null if no attribute defined.
         /// </summary>
         /// <param name="methodInfo">Method to get attribute</param>
@@ -136,8 +165,9 @@ namespace Abp.Domain.Uow
             {
                 IsTransactional = IsTransactional,
                 IsolationLevel = IsolationLevel,
+				IsMongoDb = IsMongoDb,
                 Timeout = Timeout,
-                IsMongoDb = IsMongoDb
+				Scope = Scope
             };
         }
     }

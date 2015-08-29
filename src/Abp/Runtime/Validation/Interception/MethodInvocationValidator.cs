@@ -14,6 +14,7 @@ namespace Abp.Runtime.Validation.Interception
     /// </summary>
     internal class MethodInvocationValidator
     {
+        private readonly MethodInfo _method;
         private readonly object[] _parameterValues;
         private readonly ParameterInfo[] _parameters;
         private readonly List<ValidationResult> _validationErrors;
@@ -25,6 +26,7 @@ namespace Abp.Runtime.Validation.Interception
         /// <param name="parameterValues">List of arguments those are used to call the <paramref name="method"/>.</param>
         public MethodInvocationValidator(MethodInfo method, object[] parameterValues)
         {
+            _method = method;
             _parameterValues = parameterValues;
             _parameters = method.GetParameters();
             _validationErrors = new List<ValidationResult>();
@@ -35,6 +37,18 @@ namespace Abp.Runtime.Validation.Interception
         /// </summary>
         public void Validate()
         {
+            if (!_method.IsPublic)
+            {
+                //Validate only public methods!
+                return;
+            }
+
+            if (_method.IsDefined(typeof (DisableValidationAttribute)))
+            {
+                //Don't validate if explicitly requested!
+                return;                
+            }
+
             if (_parameters.IsNullOrEmpty())
             {
                 //Object has no parameter, no need to validate.
@@ -54,7 +68,10 @@ namespace Abp.Runtime.Validation.Interception
 
             if (_validationErrors.Any())
             {
-                throw new AbpValidationException("Method arguments are not valid! See ValidationErrors for details.") { ValidationErrors = _validationErrors };
+                throw new AbpValidationException(
+                    "Method arguments are not valid! See ValidationErrors for details.",
+                    _validationErrors
+                    );
             }
 
             foreach (var parameterValue in _parameterValues)
@@ -85,7 +102,7 @@ namespace Abp.Runtime.Validation.Interception
 
         private void ValidateObjectRecursively(object validatingObject)
         {
-            if (validatingObject is IEnumerable)
+            if (validatingObject is IEnumerable && !(validatingObject is IQueryable))
             {
                 foreach (var item in (validatingObject as IEnumerable))
                 {
@@ -131,6 +148,7 @@ namespace Abp.Runtime.Validation.Interception
                     DisplayName = property.Name,
                     MemberName = property.Name
                 };
+
                 foreach (var attribute in validationAttributes)
                 {
                     var result = attribute.GetValidationResult(property.GetValue(validatingObject), validationContext);

@@ -1,4 +1,6 @@
-﻿using Abp.Dependency;
+﻿using System;
+using System.Transactions;
+using Abp.Dependency;
 
 namespace Abp.Domain.Uow
 {
@@ -31,13 +33,21 @@ namespace Abp.Domain.Uow
             return Begin(new UnitOfWorkOptions());
         }
 
+        public IUnitOfWorkCompleteHandle Begin(TransactionScopeOption scope)
+        {
+            return Begin(new UnitOfWorkOptions { Scope = scope });
+        }
+
         public IUnitOfWorkCompleteHandle Begin(UnitOfWorkOptions options)
         {
-            if (_currentUnitOfWorkProvider.Current != null)
+            options.FillDefaultsForNonProvidedOptions(_defaultOptions);
+
+            if (options.Scope == TransactionScopeOption.Required && _currentUnitOfWorkProvider.Current != null)
             {
                 return new InnerUnitOfWorkCompleteHandle();
             }
 
+<<<<<<< HEAD
             options.FillDefaultsForNonProvidedOptions(_defaultOptions);
 
             IUnitOfWork uow = null;
@@ -45,6 +55,9 @@ namespace Abp.Domain.Uow
                 uow = _iocResolver.Resolve<IMongoDbUnitOfWork>();
             else
                 uow = _iocResolver.Resolve<IUnitOfWork>();
+=======
+            var uow = _iocResolver.Resolve<IUnitOfWork>();
+>>>>>>> aspnetboilerplate/master
 
             uow.Completed += (sender, args) =>
             {
