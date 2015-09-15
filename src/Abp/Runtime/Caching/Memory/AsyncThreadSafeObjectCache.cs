@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Runtime.Caching;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 
-namespace Abp.Runtime.Caching
+namespace Abp.Runtime.Caching.Memory
 {
     /// <summary>
     /// This class is used to store items to a thread safe and generic cache in a simple manner.
+    /// It uses async pattern.
     /// </summary>
     /// <typeparam name="TValue">Value type</typeparam>
-    public class ThreadSafeObjectCache<TValue> where TValue : class
+    [Obsolete("Inject and use ICacheManager caching.")]
+    public class AsyncThreadSafeObjectCache<TValue> where TValue : class
     {
         /// <summary>
         /// The real cache object to store items.
         /// </summary>
         private readonly ObjectCache _cache;
+
+        private readonly AsyncLock _asyncLock = new AsyncLock();
 
         /// <summary>
         /// <see cref="_defaultCacheItemPolicy"/> is used if no policy is specified.
@@ -25,7 +31,7 @@ namespace Abp.Runtime.Caching
         /// Creates a new <see cref="ThreadSafeObjectCache{TValue}"/> object.
         /// </summary>
         /// <param name="cache">The real cache object to store items</param>
-        public ThreadSafeObjectCache(ObjectCache cache)
+        public AsyncThreadSafeObjectCache(ObjectCache cache)
             : this(cache, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(DefaultSlidingCacheDurationAsMinutes) })
         {
 
@@ -36,7 +42,7 @@ namespace Abp.Runtime.Caching
         /// </summary>
         /// <param name="cache">The real cache object</param>
         /// <param name="slidingExpiration">Default cache policy as sliding expiration</param>
-        public ThreadSafeObjectCache(ObjectCache cache, TimeSpan slidingExpiration)
+        public AsyncThreadSafeObjectCache(ObjectCache cache, TimeSpan slidingExpiration)
             : this(cache, new CacheItemPolicy { SlidingExpiration = slidingExpiration })
         {
 
@@ -47,7 +53,7 @@ namespace Abp.Runtime.Caching
         /// </summary>
         /// <param name="cache">The real cache object</param>
         /// <param name="absoluteExpiration">Default cache policy as absolute expiration</param>
-        public ThreadSafeObjectCache(ObjectCache cache, DateTimeOffset absoluteExpiration)
+        public AsyncThreadSafeObjectCache(ObjectCache cache, DateTimeOffset absoluteExpiration)
             : this(cache, new CacheItemPolicy { AbsoluteExpiration = absoluteExpiration })
         {
 
@@ -58,7 +64,7 @@ namespace Abp.Runtime.Caching
         /// </summary>
         /// <param name="cache">The real cache object</param>
         /// <param name="defaultCacheItemPolicy">Default cache policy</param>
-        public ThreadSafeObjectCache(ObjectCache cache, CacheItemPolicy defaultCacheItemPolicy)
+        public AsyncThreadSafeObjectCache(ObjectCache cache, CacheItemPolicy defaultCacheItemPolicy)
         {
             _cache = cache;
             _defaultCacheItemPolicy = defaultCacheItemPolicy;
@@ -78,9 +84,9 @@ namespace Abp.Runtime.Caching
         /// </summary>
         /// <param name="key">Key to get item</param>
         /// <param name="factoryMethod">A factory method to create item if it's not exists in cache</param>
-        public TValue Get(string key, Func<TValue> factoryMethod)
+        public async Task<TValue> GetAsync(string key, Func<Task<TValue>> factoryMethod)
         {
-            return Get(key, () => _defaultCacheItemPolicy, factoryMethod);
+            return await GetAsync(key, () => _defaultCacheItemPolicy, factoryMethod);
         }
 
         /// <summary>
@@ -89,9 +95,9 @@ namespace Abp.Runtime.Caching
         /// <param name="key">Key to get item</param>
         /// <param name="slidingExpiration">Sliding expiration policy</param>
         /// <param name="factoryMethod">A factory method to create item if it's not exists in cache</param>
-        public TValue Get(string key, TimeSpan slidingExpiration, Func<TValue> factoryMethod)
+        public async Task<TValue> GetAsync(string key, TimeSpan slidingExpiration, Func<Task<TValue>> factoryMethod)
         {
-            return Get(key, () => new CacheItemPolicy { SlidingExpiration = slidingExpiration }, factoryMethod);
+            return await GetAsync(key, () => new CacheItemPolicy { SlidingExpiration = slidingExpiration }, factoryMethod);
         }
 
         /// <summary>
@@ -100,9 +106,9 @@ namespace Abp.Runtime.Caching
         /// <param name="key">Key to get item</param>
         /// <param name="absoluteExpiration">Absolute expiration policy</param>
         /// <param name="factoryMethod">A factory method to create item if it's not exists in cache</param>
-        public TValue Get(string key, DateTimeOffset absoluteExpiration, Func<TValue> factoryMethod)
+        public async Task<TValue> GetAsync(string key, DateTimeOffset absoluteExpiration, Func<Task<TValue>> factoryMethod)
         {
-            return Get(key, () => new CacheItemPolicy { AbsoluteExpiration = absoluteExpiration }, factoryMethod);
+            return await GetAsync(key, () => new CacheItemPolicy { AbsoluteExpiration = absoluteExpiration }, factoryMethod);
         }
 
         /// <summary>
@@ -111,18 +117,18 @@ namespace Abp.Runtime.Caching
         /// <param name="key">Key to get item</param>
         /// <param name="cacheItemPolicy">Cache policy creation method (called only if item is being added to the cache)</param>
         /// <param name="factoryMethod">A factory method to create item if it's not exists in cache</param>
-        public TValue Get(string key, Func<CacheItemPolicy> cacheItemPolicy, Func<TValue> factoryMethod)
+        public async Task<TValue> GetAsync(string key, Func<CacheItemPolicy> cacheItemPolicy, Func<Task<TValue>> factoryMethod)
         {
             var cacheKey = key;
             var item = (TValue)_cache[cacheKey];
             if (item == null)
             {
-                lock (_cache)
+                using (await _asyncLock.LockAsync())
                 {
                     item = (TValue)_cache[cacheKey];
                     if (item == null)
                     {
-                        item = factoryMethod();
+                        item = await factoryMethod();
                         _cache.Set(cacheKey, item, cacheItemPolicy());
                     }
                 }

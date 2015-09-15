@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Web.Http.Controllers;
@@ -10,7 +10,7 @@ using Abp.Web.Models;
 
 namespace Abp.WebApi.Controllers.Dynamic.Selectors
 {
-    public class DyanamicHttpActionDescriptor : ReflectedHttpActionDescriptor
+    public class DynamicHttpActionDescriptor : ReflectedHttpActionDescriptor
     {
         /// <summary>
         /// The Action filters for the Action Descriptor.
@@ -25,7 +25,7 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
             }
         }
 
-        public DyanamicHttpActionDescriptor(HttpControllerDescriptor controllerDescriptor, MethodInfo methodInfo, IFilter[] filters = null)
+        public DynamicHttpActionDescriptor(HttpControllerDescriptor controllerDescriptor, MethodInfo methodInfo, IFilter[] filters = null)
             : base(controllerDescriptor, methodInfo)
         {
             _filters = filters;
@@ -48,15 +48,15 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
                         {
                             return task.Result;
                         }
-                        
+
                         return new AjaxResponse(task.Result);
                     }
                     catch (AggregateException ex)
                     {
                         ex.InnerException.ReThrow();
-                        throw; // The previous line will throw, but we need this to makes compiler happy
+                        throw; // The previous line will throw, but we need this to make compiler happy
                     }
-                });
+                }, cancellationToken);
         }
 
         /// <summary>
