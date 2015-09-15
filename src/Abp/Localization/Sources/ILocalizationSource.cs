@@ -44,5 +44,30 @@ namespace Abp.Localization.Sources
         /// Gets all strings in specified culture.
         /// </summary>
         IReadOnlyList<LocalizedString> GetAllStrings(CultureInfo culture);
+
+        /// <summary>
+        /// Sets localized string for given name in current language.
+        /// </summary>
+        /// <param name="name">Key name</param>
+        /// <param name="text">Localized string</param>
+        void SetString(string name, string text);
+
+        /// <summary>
+        /// Sets localized string for given name and specified culture.
+        /// </summary>
+        /// <param name="name">Key name</param>
+        /// <param name="text">Localized string</param>
+        /// <param name="culture">culture information</param>
+        void SetString(string name, string text, CultureInfo culture);
+
+        /// <summary>
+        /// Refresh all strings in current language.
+        /// </summary>
+        void RefreshAllStrings();
+
+        /// <summary>
+        /// Refresh all strings in specified culture.
+        /// </summary>
+        void RefreshAllStrings(CultureInfo culture);
     }
 }

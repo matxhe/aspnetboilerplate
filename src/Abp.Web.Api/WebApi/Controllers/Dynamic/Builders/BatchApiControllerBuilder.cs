@@ -49,7 +49,7 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
                 from
                     type in _assembly.GetTypes()
                 where
-                    type.IsPublic && type.IsInterface && typeof(T).IsAssignableFrom(type) && IocManager.Instance.IsRegistered(type)
+                    !type.IsGenericType && type.IsPublic && type.IsInterface && typeof(T).IsAssignableFrom(type) && IocManager.Instance.IsRegistered(type)
                 select
                     type;
 

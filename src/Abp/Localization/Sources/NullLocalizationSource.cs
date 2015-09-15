@@ -49,5 +49,26 @@ namespace Abp.Localization.Sources
         {
             return _emptyStringArray;
         }
+
+
+        public void SetString(string name, string text)
+        {
+
+        }
+
+        public void SetString(string name, string text, CultureInfo culture)
+        {
+            
+        }
+
+        public void RefreshAllStrings()
+        {
+            
+        }
+
+        public void RefreshAllStrings(CultureInfo culture)
+        {
+            
+        }
     }
 }

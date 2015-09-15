@@ -47,17 +47,11 @@ namespace Abp.Domain.Uow
                 return new InnerUnitOfWorkCompleteHandle();
             }
 
-<<<<<<< HEAD
-            options.FillDefaultsForNonProvidedOptions(_defaultOptions);
-
             IUnitOfWork uow = null;
             if(options.IsMongoDb)
                 uow = _iocResolver.Resolve<IMongoDbUnitOfWork>();
             else
                 uow = _iocResolver.Resolve<IUnitOfWork>();
-=======
-            var uow = _iocResolver.Resolve<IUnitOfWork>();
->>>>>>> aspnetboilerplate/master
 
             uow.Completed += (sender, args) =>
             {

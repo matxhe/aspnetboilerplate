@@ -115,5 +115,29 @@ namespace Abp.Localization.Sources.Resource
 
             throw new AbpException(exceptionMessage);
         }
+
+        /// <inheritdoc/>
+        public void SetString(string name, string text)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public void SetString(string name, string text, CultureInfo culture)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public void RefreshAllStrings()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public void RefreshAllStrings(CultureInfo culture)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

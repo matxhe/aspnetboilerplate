@@ -75,6 +75,11 @@ namespace Abp.EntityFramework.Repositories
             return Table.Add(entity);
         }
 
+        public override IEnumerable<TEntity> InsertBatch(IEnumerable<TEntity> entityList)
+        {
+            return Table.AddRange(entityList);
+        }
+
         public override Task<TEntity> InsertAsync(TEntity entity)
         {
             return Task.FromResult(Table.Add(entity));

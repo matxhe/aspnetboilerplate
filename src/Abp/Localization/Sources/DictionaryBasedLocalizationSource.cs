@@ -8,6 +8,7 @@ using Abp.Dependency;
 using Abp.Localization.Dictionaries;
 using Abp.Logging;
 using Castle.Core.Logging;
+using System.Linq;
 
 namespace Abp.Localization.Sources
 {
@@ -36,6 +37,8 @@ namespace Abp.Localization.Sources
 
         private ILocalizationConfiguration _configuration;
 
+        private IIocResolver _iocResolver;
+
         private readonly ILocalizationDictionaryProvider _dictionaryProvider;
 
         /// <summary>
@@ -54,6 +57,7 @@ namespace Abp.Localization.Sources
         public virtual void Initialize(ILocalizationConfiguration configuration, IIocResolver iocResolver)
         {
             _configuration = configuration;
+            _iocResolver = iocResolver;
 
             if (_dictionaryProvider == null)
             {
@@ -232,6 +236,69 @@ namespace Abp.Localization.Sources
             {
                 existingDictionary[localizedString.Name] = localizedString.Value;
             }
+        }
+
+        /// <inheritdoc/>
+        public void SetString(string name, string text)
+        {
+            SetString(name, text, Thread.CurrentThread.CurrentUICulture);
+        }
+
+        /// <inheritdoc/>
+        public void SetString(string name, string text, CultureInfo culture)
+        {
+            var cultureCode = culture.Name;
+
+            //Try to set original dictionary (with country code)
+
+            ILocalizationDictionary originalDictionary;
+            if (_dictionaries.TryGetValue(cultureCode, out originalDictionary))
+            {
+                originalDictionary[name] = text;
+            }
+
+            //Try to set same language dictionary (without country code)
+
+            if (cultureCode.Length == 5) //Example: "tr-TR" (length=5)
+            {
+                var langCode = cultureCode.Substring(0, 2);
+                ILocalizationDictionary langDictionary;
+                if (_dictionaries.TryGetValue(langCode, out langDictionary))
+                {
+                    langDictionary[name] = text;
+                }
+            }
+
+            //Try to set default language
+
+            if (_defaultDictionary == null)
+            {
+                var exceptionMessage = string.Format(
+                    "No default language is defined!");
+
+                throw new AbpException(exceptionMessage);
+            }
+
+            _defaultDictionary[name] = text;
+
+        }
+
+        /// <inheritdoc/>
+        public void RefreshAllStrings()
+        {
+            RefreshAllStrings(Thread.CurrentThread.CurrentUICulture);
+        }
+
+        /// <inheritdoc/>
+        public void RefreshAllStrings(CultureInfo culture)
+        {
+            if (_dictionaryProvider == null)
+            {
+                return;
+            }
+
+            var lastestDictionaryInfo = _dictionaryProvider.GetDictionaries(Name).FirstOrDefault(d => d.Dictionary.CultureInfo.Name == culture.Name);
+            _dictionaries[culture.Name] = lastestDictionaryInfo.Dictionary;
         }
     }
 }

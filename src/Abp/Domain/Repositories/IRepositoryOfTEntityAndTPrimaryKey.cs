@@ -139,6 +139,18 @@ namespace Abp.Domain.Repositories
         Task<TEntity> InsertAsync(TEntity entity);
 
         /// <summary>
+        /// Batch Inserts entities.
+        /// </summary>
+        /// <param name="entityList">Inserted entities</param>
+        IEnumerable<TEntity> InsertBatch(IEnumerable<TEntity> entityList);
+
+        /// <summary>
+        /// Batch Inserts entities.
+        /// </summary>
+        /// <param name="entityList">Inserted entities</param>
+        Task<IEnumerable<TEntity>> InsertBatchAsync(IEnumerable<TEntity> entityList);
+
+        /// <summary>
         /// Inserts a new entity and gets it's Id.
         /// It may require to save current unit of work
         /// to be able to retrieve id.

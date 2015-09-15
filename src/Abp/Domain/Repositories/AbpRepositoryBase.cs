@@ -107,6 +107,14 @@ namespace Abp.Domain.Repositories
             return Task.FromResult(Insert(entity));
         }
 
+
+        public abstract IEnumerable<TEntity> InsertBatch(IEnumerable<TEntity> entityList);
+
+        public virtual Task<IEnumerable<TEntity>> InsertBatchAsync(IEnumerable<TEntity> entityList)
+        {
+            return Task.FromResult(InsertBatch(entityList));
+        }
+
         public virtual TPrimaryKey InsertAndGetId(TEntity entity)
         {
             return Insert(entity).Id;
@@ -240,5 +248,6 @@ namespace Abp.Domain.Repositories
 
             return Expression.Lambda<Func<TEntity, bool>>(lambdaBody, lambdaParam);
         }
+
     }
 }

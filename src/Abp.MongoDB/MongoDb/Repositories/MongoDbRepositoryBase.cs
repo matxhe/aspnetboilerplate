@@ -89,5 +89,11 @@ namespace Abp.MongoDb.Repositories
             var query = MongoDB.Driver.Builders.Query<TEntity>.EQ(e => e.Id, id);
             Collection.Remove(query);
         }
+
+        public override IEnumerable<TEntity> InsertBatch(IEnumerable<TEntity> entityList)
+        {
+            Collection.Insert(entityList);
+            return entityList;
+        }
     }
 }
